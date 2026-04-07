@@ -118,9 +118,15 @@
 <script>
 function previewPhoto(input) {
     if (input.files && input.files[0]) {
-        // Optional: show preview
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const img = document.getElementById('photoPreview');
+            if (img) {
+                img.src = e.target.result;
+            }
+        };
+        reader.readAsDataURL(input.files[0]);
     }
 }
-</body>
 </script>
 {% endblock %}

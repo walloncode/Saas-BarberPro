@@ -54,16 +54,15 @@ def update():
     # Profile photo upload
     file = request.files.get("photo")
     if file and file.filename and allowed_file(file.filename):
-        filename = secure_filename(file.filename)
+        ext = os.path.splitext(file.filename)[1]
+        photo_filename = f"user_{current_user.id}{ext}"
         upload_dir = os.path.join(current_app.root_path, "..", "uploads", "avatars")
         os.makedirs(upload_dir, exist_ok=True)
-        # User-specific filename
-        ext = os.path.splitext(filename)[1]
-        photo_filename = f"user_{current_user.id}{ext}"
         dest = os.path.join(upload_dir, photo_filename)
         file.save(dest)
         current_user.photo_url = f"/uploads/avatars/{photo_filename}"
         db.session.commit()
+        flash("Foto de perfil atualizada!", "success")
 
     if not (current_password and new_password):
         flash("Perfil atualizado!", "success")
@@ -86,15 +85,14 @@ def update_shop():
     # Shop logo upload
     file = request.files.get("logo")
     if file and file.filename and allowed_file(file.filename):
-        filename = secure_filename(file.filename)
+        ext = os.path.splitext(file.filename)[1]
+        logo_filename = f"shop_{shop.id}{ext}"
         upload_dir = os.path.join(current_app.root_path, "..", "uploads", "logos")
         os.makedirs(upload_dir, exist_ok=True)
-        ext = os.path.splitext(filename)[1]
-        logo_filename = f"shop_{shop.id}{ext}"
         dest = os.path.join(upload_dir, logo_filename)
         file.save(dest)
         shop.logo_url = f"/uploads/logos/{logo_filename}"
+        flash("Logo da barbearia atualizada!", "success")
 
     db.session.commit()
-    flash("Dados da barbearia atualizados!", "success")
     return redirect(url_for("profile.index"))

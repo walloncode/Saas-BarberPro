@@ -2,6 +2,12 @@
 {% block page_title %}Pagamentos{% endblock %}
 {% block content %}
 <div class="bp-anim space-y-6">
+
+    <div class="bp-page">
+        <div></div>
+        <button onclick="openModal('createModal')" class="bp-btn bp-btn--primary bp-btn--sm">+ Registrar Pagamento</button>
+    </div>
+
     {% if payments %}
     <div class="tbl-wrap">
         <div class="tbl-scroll">
@@ -28,8 +34,12 @@
                             <span class="bp-badge bp-badge--green">Dinheiro</span>
                             {% elif p.method == 'card' %}
                             <span class="bp-badge bp-badge--blue">Cartao</span>
-                            {% else %}
+                            {% elif p.method == 'pix' %}
                             <span class="bp-badge bp-badge--purple">PIX</span>
+                            {% elif p.method == 'mercadopago' %}
+                            <span class="bp-badge bp-badge--gold">Mercado Pago</span>
+                            {% else %}
+                            <span class="bp-badge bp-badge--blue">{{ p.method }}</span>
                             {% endif %}
                         </td>
                         <td class="bp-prim">R$ {{ "%.2f"|format(p.amount) }}</td>
@@ -59,5 +69,52 @@
     {% else %}
     <div class="tbl-wrap"><div class="bp-empty">Nenhum pagamento registrado</div></div>
     {% endif %}
+</div>
+
+<!-- Create Payment Modal -->
+<div id="createModal" class="hidden fixed inset-0 z-50 items-center justify-center p-4 bp-modal-backdrop">
+    <div class="bp-modal">
+        <div class="bp-modal-header">
+            <h2 class="bp-modal-title">Registrar Pagamento</h2>
+            <button onclick="closeModal('createModal')" class="bp-modal-close">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+        </div>
+        <form method="POST" action="/pagamentos/registrar">
+            <div class="bp-modal-body space-y-4" style="display:flex;flex-direction:column;gap:16px;">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                {% if pending_appointments %}
+                <div class="bp-field">
+                    <label class="bp-label">Agendamento</label>
+                    <select name="appointment_id" required class="bp-input bp-select">
+                        <option value="">Selecione um agendamento...</option>
+                        {% for apt in pending_appointments %}
+                        <option value="{{ apt.id }}">{{ apt.client.name }} - {{ apt.date.strftime('%d/%m') }} {{ apt.start_time.strftime('%H:%M') }} (R$ {{ "%.2f"|format(apt.service.price) }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                {% else %}
+                <div class="bp-empty bp-card">
+                    <p>Nenhum agendamento pendente</p>
+                    <a href="/agendamentos" class="bp-btn bp-btn--link bp-btn--sm mt-2">Ver agendamentos</a>
+                </div>
+                {% endif %}
+
+                <div class="bp-field">
+                    <label class="bp-label">Metodo de pagamento</label>
+                    <select name="method" class="bp-input bp-select">
+                        <option value="cash">Dinheiro</option>
+                        <option value="card">Cartao</option>
+                        <option value="pix">PIX</option>
+                    </select>
+                </div>
+            </div>
+            <div class="bp-modal-footer">
+                <button type="button" onclick="closeModal('createModal')" class="bp-btn bp-btn--secondary">Cancelar</button>
+                <button type="submit" class="bp-btn bp-btn--primary">Registrar</button>
+            </div>
+        </form>
+    </div>
 </div>
 {% endblock %}

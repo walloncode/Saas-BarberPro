@@ -83,6 +83,25 @@ def create():
     return redirect(url_for("appointments.index"))
 
 
+@appointments_bp.route("/agendamentos/<int:id>/concluir", methods=["POST"])
+@login_required
+@tenant_required
+def complete(id):
+    appointment = Appointment.query.filter_by(
+        id=id, barber_shop_id=current_user.barber_shop_id
+    ).first_or_404()
+
+    if appointment.status == "scheduled":
+        appointment.status = "completed"
+        appointment.client.visits_count += 1
+        db.session.commit()
+        flash("Agendamento concluido!", "success")
+    else:
+        flash("Apenas agendamentos podem ser concluidos.", "warning")
+
+    return redirect(url_for("appointments.index"))
+
+
 @appointments_bp.route("/agendamentos/<int:id>/cancelar", methods=["POST"])
 @login_required
 @tenant_required

@@ -19,7 +19,18 @@ def index():
         .order_by(Payment.created_at.desc())
         .all()
     )
-    return render_template("payments/index.html", payments=payments)
+    pending = (
+        Appointment.query.filter_by(
+            barber_shop_id=current_user.barber_shop_id, status="scheduled"
+        )
+        .order_by(Appointment.date.desc(), Appointment.start_time.desc())
+        .all()
+    )
+    return render_template(
+        "payments/index.html",
+        payments=payments,
+        pending_appointments=pending,
+    )
 
 
 @payments_bp.route("/pagamentos/registrar", methods=["POST"])
@@ -28,6 +39,10 @@ def index():
 def create():
     appointment_id = request.form.get("appointment_id", type=int)
     method = request.form.get("method", "cash")
+
+    if not appointment_id:
+        flash("Selecione um agendamento.", "warning")
+        return redirect(url_for("payments.index"))
 
     appointment = Appointment.query.filter_by(
         id=appointment_id, barber_shop_id=current_user.barber_shop_id
