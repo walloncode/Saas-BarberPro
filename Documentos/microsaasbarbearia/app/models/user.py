@@ -14,6 +14,7 @@ class User(UserMixin, db.Model):
     password_hash = db.Column(db.String(256), nullable=False)
     role = db.Column(db.String(20), nullable=False, default="admin")
     is_active = db.Column(db.Boolean, default=True)
+    photo_url = db.Column(db.String(300))
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     appointments = db.relationship("Appointment", backref="user", lazy=True)

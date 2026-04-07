@@ -24,6 +24,7 @@ def create_app(config_name=None):
 
     # Exempt auth routes (login/register don't have CSRF yet)
     csrf.exempt("api.api_bp")
+    csrf.exempt("payments.webhook_mercadopago")
 
     # Security headers
     @app.after_request
@@ -49,6 +50,8 @@ def create_app(config_name=None):
     from app.routes.barbers import barbers_bp
     from app.routes.services import services_bp
     from app.routes.payments import payments_bp
+    from app.routes.products import products_bp
+    from app.routes.profile import profile_bp
     from app.routes.api import api_bp
 
     app.register_blueprint(auth_bp)
@@ -58,6 +61,17 @@ def create_app(config_name=None):
     app.register_blueprint(barbers_bp)
     app.register_blueprint(services_bp)
     app.register_blueprint(payments_bp)
+    app.register_blueprint(products_bp)
+    app.register_blueprint(profile_bp)
     app.register_blueprint(api_bp)
+
+    # Serve uploaded files
+    from flask import send_from_directory
+
+    @app.route("/uploads/<path:subdir>/<path:filename>")
+    def uploaded_file(subdir, filename):
+        import os
+        uploads_dir = os.path.join(app.root_path, "..", "uploads", subdir)
+        return send_from_directory(uploads_dir, filename)
 
     return app

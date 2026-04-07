@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block page_title %}Dashboard{% endblock %}
+{% block page_title %}Dashboard — {{ shop.name if shop and shop.name else "BarberPro" }}{% endblock %}
 {% block content %}
 <div class="bp-anim space-y-6">
     <!-- Stats Grid -->

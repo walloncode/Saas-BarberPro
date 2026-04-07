@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+{% block page_title %}Perfil{% endblock %}
+{% block content %}
+<div class="bp-anim space-y-6">
+
+    <div class="bp-card">
+        <div class="bp-card-header">
+            <h2 class="bp-h3">Dados Pessoais</h2>
+        </div>
+        <div class="bp-card-body">
+            <form method="POST" action="/perfil/atualizar" enctype="multipart/form-data" class="space-y-4">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                <!-- Photo upload -->
+                <div class="flex items-center gap-6 mb-4">
+                    {% if current_user.photo_url %}
+                    <img src="{{ current_user.photo_url }}" class="w-20 h-20 rounded-full object-cover border-2 border-[#2e2e2e]">
+                    {% else %}
+                    <div class="w-20 h-20 rounded-full bg-accent-500 flex items-center justify-center text-dark-900 font-bold text-2xl">
+                        {{ current_user.name[0]|upper }}
+                    </div>
+                    {% endif %}
+                    <div>
+                        <label class="bp-btn bp-btn--secondary bp-btn--sm cursor-pointer">
+                            <input type="file" name="photo" accept="image/*" class="hidden" onchange="previewPhoto(this)">
+                            <svg class="w-14 h-14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                            <span>Alterar foto</span>
+                        </label>
+                        <p class="bp-muted mt-1" style="font-size:0.72rem;">JPG, PNG ou WEBP</p>
+                    </div>
+                </div>
+
+                <div class="bp-field-row">
+                    <div class="bp-field">
+                        <label class="bp-label">Nome</label>
+                        <input type="text" name="name" value="{{ current_user.name }}" class="bp-input">
+                    </div>
+                    <div class="bp-field">
+                        <label class="bp-label">Email</label>
+                        <input type="text" name="email" value="{{ current_user.email }}" class="bp-input">
+                    </div>
+                </div>
+
+                <div class="bp-field-row">
+                    <div class="bp-field">
+                        <label class="bp-label">Senha atual</label>
+                        <input type="password" name="current_password" placeholder="Deixe vazio para manter" class="bp-input">
+                    </div>
+                    <div class="bp-field">
+                        <label class="bp-label">Nova senha</label>
+                        <input type="password" name="new_password" placeholder="Minimo 6 caracteres" class="bp-input">
+                    </div>
+                </div>
+
+                <div class="flex justify-end">
+                    <button type="submit" class="bp-btn bp-btn--primary">Salvar alterações</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="bp-card">
+        <div class="bp-card-header">
+            <h2 class="bp-h3">Barbearia</h2>
+        </div>
+        <div class="bp-card-body">
+            <form method="POST" action="/perfil/barbearia" enctype="multipart/form-data" class="space-y-4">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                <!-- Logo upload -->
+                <div class="flex items-center gap-6 mb-4">
+                    {% if shop and shop.logo_url %}
+                    <img src="{{ shop.logo_url }}" class="w-16 h-16 rounded-xl object-cover border-2 border-[#2e2e2e]">
+                    {% elif shop %}
+                    <div class="w-16 h-16 rounded-xl bg-accent-500 flex items-center justify-center">
+                        <svg class="w-7 h-7 text-dark-900" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.121 14.121L19 19m-7-7l7-7m-7 7l-2.879 2.879M12 12L9.121 9.121m0 5.758a3 3 0 10-4.243 4.243 3 3 0 004.243-4.243zm0-5.758a3 3 0 10-4.243-4.243 3 3 0 004.243 4.243z"></path></svg>
+                    </div>
+                    {% endif %}
+                    <div>
+                        <label class="bp-btn bp-btn--secondary bp-btn--sm cursor-pointer">
+                            <input type="file" name="logo" accept="image/*" class="hidden">
+                            <svg class="w-14 h-14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                            <span>Alterar logo</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="bp-field-row">
+                    <div class="bp-field">
+                        <label class="bp-label">Nome da Barbearia</label>
+                        <input type="text" name="shop_name" value="{{ shop.name if shop }}" class="bp-input">
+                    </div>
+                    <div class="bp-field">
+                        <label class="bp-label">Telefone</label>
+                        <input type="text" name="shop_phone" value="{{ shop.phone if shop }}" class="bp-input" placeholder="(00) 00000-0000">
+                    </div>
+                </div>
+                <div class="bp-field-row">
+                    <div class="bp-field">
+                        <label class="bp-label">Email</label>
+                        <input type="text" name="shop_email" value="{{ shop.email if shop }}" class="bp-input">
+                    </div>
+                    <div class="bp-field">
+                        <label class="bp-label">Endereço</label>
+                        <input type="text" name="shop_address" value="{{ shop.address if shop }}" class="bp-input">
+                    </div>
+                </div>
+
+                <div class="flex justify-end">
+                    <button type="submit" class="bp-btn bp-btn--primary">Salvar barbearia</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+</div>
+
+<script>
+function previewPhoto(input) {
+    if (input.files && input.files[0]) {
+        // Optional: show preview
+    }
+}
+</body>
+</script>
+{% endblock %}

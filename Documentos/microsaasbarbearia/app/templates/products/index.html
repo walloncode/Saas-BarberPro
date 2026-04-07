@@ -1,0 +1,180 @@
+{% extends "base.html" %}
+{% block page_title %}Produtos{% endblock %}
+{% block content %}
+<div class="bp-anim space-y-6">
+    <div class="bp-page">
+        <form method="GET" class="bp-search flex-1 max-w-md">
+            <span style="color:#6b7280;">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+            </span>
+            <input type="text" name="q" value="{{ search }}" placeholder="Buscar produto..." class="bp-search__input">
+            <button type="submit" class="bp-btn bp-btn--ghost bp-btn--icon">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+            </button>
+        </form>
+        <div class="flex items-center gap-2">
+            <button onclick="openModal('createModal')" class="bp-btn bp-btn--primary bp-btn--sm">+ Novo Produto</button>
+        </div>
+    </div>
+
+    {% if products %}
+    <div class="tbl-wrap">
+        <div class="tbl-scroll">
+            <table class="bp-table">
+                <thead>
+                    <tr>
+                        <th>Produto</th>
+                        <th>Preço</th>
+                        <th>Estoque</th>
+                        <th>Status</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for p in products %}
+                    <tr>
+                        <td>
+                            <div class="flex items-center gap-3">
+                                {% if p.image_url %}
+                                <img src="{{ p.image_url }}" class="w-8 h-8 rounded-lg object-cover" style="background:#262626;">
+                                {% else %}
+                                <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background:rgba(245,158,11,0.14);color:#f59e0b;">
+                                    <svg class="w-15 h-15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
+                                </div>
+                                {% endif %}
+                                <span class="bp-prim">{{ p.name }}</span>
+                            </div>
+                        </td>
+                        <td class="bp-prim">{% if p.price %}R$ {{ "%.2f"|format(p.price) }}{% else %}-{% endif %}</td>
+                        <td class="text-center bp-prim">{{ p.stock }}</td>
+                        <td class="text-center">
+                            {% if p.is_active %}
+                            <span class="bp-badge bp-badge--green">Ativo</span>
+                            {% else %}
+                            <span class="bp-badge bp-badge--red">Inativo</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <button type="button" data-edit-id="{{ p.id }}" data-edit-name="{{ p.name }}" data-edit-price="{{ p.price }}" data-edit-stock="{{ p.stock }}" data-edit-desc="{{ p.description or '' }}" onclick="openEditFromData(this)" class="bp-btn bp-btn--link bp-btn--sm">Editar</button>
+                            <form method="POST" action="/produtos/{{ p.id }}/toggle-status" class="inline" onsubmit="return confirm('Alterar status do produto?')">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit" class="bp-btn bp-btn--ghost bp-btn--sm" style="color:{% if p.is_active %}#ef4444{% else %}#22c55e{% endif %}">{{ 'Desativar' if p.is_active else 'Ativar' }}</button>
+                            </form>
+                            <form method="POST" action="/produtos/{{ p.id }}/excluir" class="inline" onsubmit="return confirm('Excluir {{ p.name }}?')">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit" class="bp-btn bp-btn--ghost bp-btn--sm" style="color:#ef4444;">Excluir</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% else %}
+    <div class="tbl-wrap"><div class="bp-empty">Nenhum produto cadastrado</div></div>
+    {% endif %}
+</div>
+
+<!-- Create Modal -->
+<div id="createModal" class="hidden fixed inset-0 z-50 items-center justify-center p-4 bp-modal-backdrop">
+    <div class="bp-modal">
+        <div class="bp-modal-header">
+            <h2 class="bp-modal-title">Novo Produto</h2>
+            <button onclick="closeModal('createModal')" class="bp-modal-close">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+        </div>
+        <form method="POST" action="/produtos/criar" enctype="multipart/form-data">
+            <div class="bp-modal-body space-y-4" style="display:flex;flex-direction:column;gap:16px;">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="bp-field">
+                    <label class="bp-label">Nome *</label>
+                    <input type="text" name="name" required class="bp-input" placeholder="Nome do produto">
+                </div>
+                <div class="bp-field">
+                    <label class="bp-label">Descrição</label>
+                    <textarea name="description" class="bp-input" rows="2" placeholder="Descrição opcional"></textarea>
+                </div>
+                <div class="bp-field-row">
+                    <div class="bp-field">
+                        <label class="bp-label">Preço (R$) *</label>
+                        <input type="number" name="price" required step="0.01" class="bp-input" placeholder="0.00">
+                    </div>
+                    <div class="bp-field">
+                        <label class="bp-label">Estoque</label>
+                        <input type="number" name="stock" class="bp-input" value="0">
+                    </div>
+                </div>
+                <div class="bp-field">
+                    <label class="bp-label">Imagem</label>
+                    <input type="file" name="image" accept="image/*" class="bp-input">
+                </div>
+            </div>
+            <div class="bp-modal-footer">
+                <button type="button" onclick="closeModal('createModal')" class="bp-btn bp-btn--secondary">Cancelar</button>
+                <button type="submit" class="bp-btn bp-btn--primary">Criar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Edit Modal -->
+<div id="editModal" class="hidden fixed inset-0 z-50 items-center justify-center p-4 bp-modal-backdrop">
+    <div class="bp-modal">
+        <div class="bp-modal-header">
+            <h2 class="bp-modal-title">Editar Produto</h2>
+            <button onclick="closeModal('editModal')" class="bp-modal-close">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+        </div>
+        <form id="editForm" method="POST" enctype="multipart/form-data">
+            <div class="bp-modal-body space-y-4" style="display:flex;flex-direction:column;gap:16px;">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="bp-field">
+                    <label class="bp-label">Nome *</label>
+                    <input type="text" id="editNameInput" required class="bp-input">
+                </div>
+                <div class="bp-field">
+                    <label class="bp-label">Descrição</label>
+                    <textarea id="editDescInput" class="bp-input" rows="2"></textarea>
+                </div>
+                <div class="bp-field-row">
+                    <div class="bp-field">
+                        <label class="bp-label">Preço (R$) *</label>
+                        <input type="number" id="editPriceInput" step="0.01" required class="bp-input">
+                    </div>
+                    <div class="bp-field">
+                        <label class="bp-label">Estoque</label>
+                        <input type="number" id="editStockInput" class="bp-input">
+                    </div>
+                </div>
+                <div class="bp-field">
+                    <label class="bp-label">Imagem</label>
+                    <input type="file" name="image" accept="image/*" class="bp-input">
+                </div>
+            </div>
+            <div class="bp-modal-footer">
+                <button type="button" onclick="closeModal('editModal')" class="bp-btn bp-btn--secondary">Cancelar</button>
+                <button type="submit" class="bp-btn bp-btn--primary">Salvar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function openEditFromData(btn) {
+    const id = btn.dataset.editId;
+    const name = btn.dataset.editName;
+    const price = btn.dataset.editPrice;
+    const stock = btn.dataset.editStock;
+    const desc = btn.dataset.editDesc;
+    document.getElementById('editForm').action = '/produtos/' + id + '/editar';
+    document.getElementById('editNameInput').value = name;
+    document.getElementById('editPriceInput').value = price;
+    document.getElementById('editStockInput').value = stock;
+    document.getElementById('editDescInput').value = desc;
+    openModal('editModal');
+}
+</script>
+{% endblock %}

@@ -10,6 +10,7 @@ class BarberShop(db.Model):
     phone = db.Column(db.String(20))
     email = db.Column(db.String(120))
     address = db.Column(db.String(200))
+    logo_url = db.Column(db.String(300))
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     users = db.relationship("User", backref="barber_shop", lazy=True)

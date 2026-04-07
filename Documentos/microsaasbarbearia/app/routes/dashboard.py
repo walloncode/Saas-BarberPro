@@ -53,8 +53,11 @@ def index():
         chart_labels.append(day_label)
         chart_data.append(day_total)
 
+    shop = current_user.barber_shop
+
     return render_template(
         "dashboard/index.html",
+        shop=shop,
         today_appointments=today_appointments,
         total_revenue=total_revenue,
         new_clients=new_clients,

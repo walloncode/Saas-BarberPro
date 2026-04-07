@@ -557,11 +557,19 @@
         <aside id="sidebar" class="w-64 bg-dark-800 border-r border-dark-700 flex flex-col fixed md:relative inset-y-0 left-0 z-40 transform -translate-x-full md:translate-x-0 transition-transform duration-200">
             <div class="p-6 border-b border-dark-700">
                 <a href="/" class="flex items-center gap-3">
+                    {% if current_user.barber_shop and current_user.barber_shop.logo_url %}
+                    <img src="{{ current_user.barber_shop.logo_url }}" class="w-10 h-10 rounded-xl object-cover" style="box-shadow:0 0 6px rgba(245,158,11,0.2);">
+                    {% else %}
                     <div class="w-10 h-10 bg-accent-500 rounded-xl flex items-center justify-center" style="box-shadow:0 0 6px rgba(245,158,11,0.2);">
                         <svg class="w-6 h-6 text-dark-900" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.121 14.121L19 19m-7-7l7-7m-7 7l-2.879 2.879M12 12L9.121 9.121m0 5.758a3 3 0 10-4.243 4.243 3 3 0 004.243-4.243zm0-5.758a3 3 0 10-4.243-4.243 3 3 0 004.243 4.243z"></path></svg>
                     </div>
-                    <div>
+                    {% endif %}
+                    <div class="min-w-0">
+                        {% if current_user.barber_shop and current_user.barber_shop.name %}
+                        <span class="text-sm font-bold text-white truncate block">{{ current_user.barber_shop.name }}</span>
+                        {% else %}
                         <span class="text-lg font-bold text-white">Barber</span><span class="text-lg font-bold text-accent-500">Pro</span>
+                        {% endif %}
                     </div>
                 </a>
             </div>
@@ -590,17 +598,25 @@
                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                     Pagamentos
                 </a>
+                <a href="/produtos" class="bp-nav {% if 'products' in request.endpoint %}bp-nav--active{% endif %}">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
+                    Produtos
+                </a>
             </nav>
-            <div class="p-4 border-t border-dark-700">
-                <div class="flex items-center gap-3 px-4 py-2">
-                    <div class="w-8 h-8 bg-accent-500 rounded-full flex items-center justify-center text-dark-900 font-semibold text-sm">
+            <div class="p-4 border-t border-dark-700 space-y-2">
+                <a href="/perfil" class="flex items-center gap-3 px-4 py-2 rounded-xl transition-colors{% if 'profile' in request.endpoint %} bg-[#262626]{% endif %}{% if 'profile' not in request.endpoint %}:hover:bg-[#262626]{% endif %}">
+                    {% if current_user.photo_url %}
+                    <img src="{{ current_user.photo_url }}" class="w-8 h-8 rounded-full object-cover border border-[#2e2e2e]">
+                    {% else %}
+                    <div class="w-8 h-8 bg-accent-500 rounded-full flex items-center justify-center text-dark-900 font-semibold text-sm flex-shrink-0">
                         {{ current_user.name[0]|upper }}
                     </div>
+                    {% endif %}
                     <div class="flex-1 min-w-0">
                         <p class="text-sm font-medium text-white truncate">{{ current_user.name }}</p>
                         <p class="text-xs text-dark-400 truncate">{{ current_user.role }}</p>
                     </div>
-                </div>
+                </a>
             </div>
         </aside>
         <!-- Sidebar Overlay -->

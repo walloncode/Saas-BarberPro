@@ -16,6 +16,7 @@ class Payment(db.Model):
     status = db.Column(db.String(20), nullable=False, default="pending")
     paid_at = db.Column(db.DateTime)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    mercadopago_id = db.Column(db.String(100), unique=True, nullable=True)
 
     appointment = db.relationship("Appointment", backref="payment")
 
