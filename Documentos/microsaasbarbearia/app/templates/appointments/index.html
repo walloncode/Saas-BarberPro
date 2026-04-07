@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+{% block page_title %}Agendamentos{% endblock %}
+{% block content %}
+<div class="bp-anim space-y-6">
+    <div class="bp-page">
+        <form method="GET" class="flex items-center gap-2">
+            <input type="date" name="date" value="{{ request.args.get('date', '') }}" class="bp-input bp-input--sm" style="width:auto;">
+            <button type="submit" class="bp-btn bp-btn--secondary bp-btn--sm">Filtrar</button>
+        </form>
+        <button onclick="openModal('createModal')" class="bp-btn bp-btn--primary bp-btn--sm">+ Novo Agendamento</button>
+    </div>
+
+    {% if appointments %}
+    <div class="tbl-wrap">
+        <div class="tbl-scroll">
+            <table class="bp-table">
+                <thead>
+                    <tr>
+                        <th>Data</th>
+                        <th>Horario</th>
+                        <th>Cliente</th>
+                        <th>Barbeiro</th>
+                        <th>Servico</th>
+                        <th>Status</th>
+                        <th>Acoes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for apt in appointments %}
+                    <tr>
+                        <td class="bp-prim">{{ apt.date.strftime('%d/%m/%Y') }}</td>
+                        <td>{{ apt.start_time.strftime('%H:%M') }} - {{ apt.end_time.strftime('%H:%M') }}</td>
+                        <td class="bp-prim">{{ apt.client.name }}</td>
+                        <td>{{ apt.barber.name }}</td>
+                        <td>{{ apt.service.name }}</td>
+                        <td class="text-center">
+                            {% if apt.status == 'scheduled' %}
+                            <span class="bp-badge bp-badge--blue">Agendado</span>
+                            {% elif apt.status == 'completed' %}
+                            <span class="bp-badge bp-badge--green">Concluido</span>
+                            {% else %}
+                            <span class="bp-badge bp-badge--red">Cancelado</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if apt.status == 'scheduled' %}
+                            <form method="POST" action="/agendamentos/{{ apt.id }}/cancelar" class="inline" onsubmit="return confirm('Cancelar este agendamento?')">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit" class="bp-btn bp-btn--ghost bp-btn--sm" style="color:#ef4444;">Cancelar</button>
+                            </form>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% else %}
+    <div class="tbl-wrap"><div class="bp-empty">Nenhum agendamento encontrado</div></div>
+    {% endif %}
+</div>
+
+<!-- Create Modal -->
+<div id="createModal" class="hidden fixed inset-0 z-50 items-center justify-center p-4 bp-modal-backdrop">
+    <div class="bp-modal">
+        <div class="bp-modal-header">
+            <h2 class="bp-modal-title">Novo Agendamento</h2>
+            <button onclick="closeModal('createModal')" class="bp-modal-close">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+        </div>
+        <form method="POST" action="/agendamentos/criar">
+            <div class="bp-modal-body space-y-4" style="display:flex;flex-direction:column;gap:16px;">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="bp-field">
+                    <label class="bp-label">Cliente</label>
+                    <select name="client_id" required class="bp-input bp-select">
+                        <option value="">Selecione...</option>
+                        {% for c in clients %}
+                        <option value="{{ c.id }}">{{ c.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="bp-field">
+                    <label class="bp-label">Barbeiro</label>
+                    <select name="barber_id" required class="bp-input bp-select">
+                        <option value="">Selecione...</option>
+                        {% for b in barbers %}
+                        <option value="{{ b.id }}">{{ b.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="bp-field">
+                    <label class="bp-label">Servico</label>
+                    <select name="service_id" required class="bp-input bp-select">
+                        <option value="">Selecione...</option>
+                        {% for s in services %}
+                        <option value="{{ s.id }}">{{ s.name }} - R$ {{ "%.2f"|format(s.price) }} ({{ s.duration_minutes }}min)</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+                    <div class="bp-field">
+                        <label class="bp-label">Data</label>
+                        <input type="date" name="date" required class="bp-input">
+                    </div>
+                    <div class="bp-field">
+                        <label class="bp-label">Horario</label>
+                        <input type="time" name="start_time" required class="bp-input">
+                    </div>
+                </div>
+            </div>
+            <div class="bp-modal-footer">
+                <button type="button" onclick="closeModal('createModal')" class="bp-btn bp-btn--secondary">Cancelar</button>
+                <button type="submit" class="bp-btn bp-btn--primary">Agendar</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

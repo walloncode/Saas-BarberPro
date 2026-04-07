@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block auth_content %}
+<div class="bp-auth-card bp-anim">
+    <div class="bp-auth-header">
+        <div class="bp-auth-icon">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.121 14.121L19 19m-7-7l7-7m-7 7l-2.879 2.879M12 12L9.121 9.121m0 5.758a3 3 0 10-4.243 4.243 3 3 0 004.243-4.243zm0-5.758a3 3 0 10-4.243-4.243 3 3 0 004.243 4.243z"></path></svg>
+        </div>
+        <h1 class="bp-h2">Bem-vindo de volta</h1>
+        <p class="bp-muted">Faca login para acessar sua barbearia</p>
+    </div>
+    <form method="POST" class="bp-auth-body">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="bp-field">
+            <label class="bp-label">Email</label>
+            <input type="email" name="email" required class="bp-input" placeholder="seu@email.com">
+        </div>
+        <div class="bp-field">
+            <label class="bp-label">Senha</label>
+            <input type="password" name="password" required class="bp-input" placeholder="Sua senha">
+        </div>
+        <button type="submit" class="bp-btn bp-btn--primary bp-btn--lg bp-btn--block">Entrar</button>
+    </form>
+    <div class="bp-auth-footer">
+        Nao tem uma conta? <a href="/register">Cadastre sua barbearia</a>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,29 @@
+/* DESIGN SYSTEM — BarberPro
+ * Design tokens. Component styles live inline in base.html to avoid
+ * Tailwind CDN preflight conflicts.
+ */
+
+:root {
+  --bg: #0f0f0f;
+  --surface: #1c1c1c;
+  --surface-hi: #262626;
+  --border: #2e2e2e;
+  --border-hi: #404040;
+  --text: #ffffff;
+  --text-sec: #a3a3a3;
+  --text-muted: #6b7280;
+  --gold: #f59e0b;
+  --gold-hi: #fbbf24;
+  --gold-lo: #b45309;
+  --gold-bg: rgba(245, 158, 11, 0.08);
+  --gold-bg-a: rgba(245, 158, 11, 0.14);
+  --gold-glow: 0 0 20px rgba(245, 158, 11, 0.13);
+  --blue: #3b82f6;
+  --blue-s: #60a5fa;
+  --blue-bg: rgba(37, 99, 235, 0.12);
+  --ok: #22c55e;
+  --err: #ef4444;
+  --warn: #f59e0b;
+  --purple-s: #c084fc;
+  --purple-bg: rgba(147, 51, 234, 0.14);
+}

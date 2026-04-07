@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block auth_content %}
+<div class="bp-auth-card bp-anim">
+    <div class="bp-auth-header">
+        <div class="bp-auth-icon">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path></svg>
+        </div>
+        <h1 class="bp-h2">Cadastre sua barbearia</h1>
+        <p class="bp-muted">Comece a gerenciar sua barbearia hoje</p>
+    </div>
+    <form method="POST" class="bp-auth-body">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="bp-field">
+            <label class="bp-label">Nome da barbearia</label>
+            <input type="text" name="shop_name" required class="bp-input" placeholder="Barbearia Exemplo">
+        </div>
+        <div class="bp-field">
+            <label class="bp-label">Seu nome</label>
+            <input type="text" name="name" required class="bp-input" placeholder="Joao Silva">
+        </div>
+        <div class="bp-field">
+            <label class="bp-label">Email</label>
+            <input type="email" name="email" required class="bp-input" placeholder="seu@email.com">
+        </div>
+        <div class="bp-field">
+            <label class="bp-label">Senha</label>
+            <input type="password" name="password" required minlength="6" class="bp-input" placeholder="Minimo 6 caracteres">
+        </div>
+        <div class="bp-field">
+            <label class="bp-label">Confirmar senha</label>
+            <input type="password" name="confirm_password" required minlength="6" class="bp-input" placeholder="Repita a senha">
+        </div>
+        <button type="submit" class="bp-btn bp-btn--primary bp-btn--lg bp-btn--block">Criar conta</button>
+    </form>
+    <div class="bp-auth-footer">
+        Ja tem uma conta? <a href="/login">Fazer login</a>
+    </div>
+</div>
+{% endblock %}

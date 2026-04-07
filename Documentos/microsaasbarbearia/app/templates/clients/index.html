@@ -1,0 +1,189 @@
+{% extends "base.html" %}
+{% block page_title %}Clientes{% endblock %}
+{% block content %}
+<div class="bp-anim space-y-6">
+    <div class="bp-page">
+        <form method="GET" class="bp-search flex-1 max-w-md">
+            <span style="color:#6b7280;">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+            </span>
+            <input type="text" name="q" value="{{ search }}" placeholder="Buscar cliente..." class="bp-search__input">
+            <button type="submit" class="bp-btn bp-btn--ghost bp-btn--icon">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+            </button>
+        </form>
+        <div class="flex items-center gap-2">
+            <a href="/clientes/exportar" class="bp-btn bp-btn--secondary bp-btn--sm">Exportar CSV</a>
+            <button onclick="openModal('createModal')" class="bp-btn bp-btn--primary bp-btn--sm">+ Novo Cliente</button>
+        </div>
+    </div>
+
+    {% if clients %}
+    <div class="tbl-wrap">
+        <div class="tbl-scroll">
+            <table class="bp-table">
+                <thead>
+                    <tr>
+                        <th>Nome</th>
+                        <th>Telefone</th>
+                        <th>Email</th>
+                        <th>Visitas</th>
+                        <th>Status</th>
+                        <th>Acoes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for c in clients %}
+                    <tr>
+                        <td>
+                            <div class="flex items-center gap-3">
+                                <div class="bp-av">{{ c.name[0]|upper }}</div>
+                                <span class="bp-prim">{{ c.name }}</span>
+                            </div>
+                        </td>
+                        <td>{{ c.phone or '-' }}</td>
+                        <td>{{ c.email or '-' }}</td>
+                        <td class="text-center"><span class="bp-prim">{{ c.visits_count }}</span></td>
+                        <td class="text-center">
+                            {% if c.is_active %}
+                            <span class="bp-badge bp-badge--green">Ativo</span>
+                            {% else %}
+                            <span class="bp-badge bp-badge--red">Inativo</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <button onclick="openEditModal('{{ c.id }}','{{ c.name }}','{{ c.phone or '' }}','{{ c.email or '' }}','{{ c.cpf or '' }}','{{ c.notes or '' }}')" class="bp-btn bp-btn--link bp-btn--sm">Editar</button>
+                            <form method="POST" action="/clientes/{{ c.id }}/toggle-status" class="inline">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit" class="bp-btn bp-btn--ghost bp-btn--sm" style="color:{% if c.is_active %}#ef4444{% else %}#22c55e{% endif %}">{{ 'Desativar' if c.is_active else 'Ativar' }}</button>
+                            </form>
+                            <form method="POST" action="/clientes/{{ c.id }}/excluir" class="inline" onsubmit="return confirm('Excluir {{ c.name }}?')">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit" class="bp-btn bp-btn--ghost bp-btn--sm" style="color:#ef4444;">Excluir</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% else %}
+    <div class="tbl-wrap"><div class="bp-empty">Nenhum cliente encontrado</div></div>
+    {% endif %}
+</div>
+
+<!-- Create Modal -->
+<div id="createModal" class="hidden fixed inset-0 z-50 items-center justify-center p-4 bp-modal-backdrop">
+    <div class="bp-modal">
+        <div class="bp-modal-header">
+            <h2 class="bp-modal-title">Novo Cliente</h2>
+            <button onclick="closeModal('createModal')" class="bp-modal-close">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+        </div>
+        <form method="POST" action="/clientes/criar">
+            <div class="bp-modal-body space-y-4" style="display:flex;flex-direction:column;gap:16px;">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="bp-field">
+                    <label class="bp-label">Nome *</label>
+                    <input type="text" name="name" required class="bp-input" placeholder="Nome completo">
+                </div>
+                <div class="bp-field-row">
+                    <div class="bp-field">
+                        <label class="bp-label">Telefone</label>
+                        <input type="text" name="phone" class="bp-input" placeholder="(00) 00000-0000">
+                    </div>
+                    <div class="bp-field">
+                        <label class="bp-label">CPF</label>
+                        <input type="text" name="cpf" class="bp-input" placeholder="000.000.000-00">
+                    </div>
+                </div>
+                <div class="bp-field">
+                    <label class="bp-label">Email</label>
+                    <input type="email" name="email" class="bp-input" placeholder="email@exemplo.com">
+                </div>
+            </div>
+            <div class="bp-modal-footer">
+                <button type="button" onclick="closeModal('createModal')" class="bp-btn bp-btn--secondary">Cancelar</button>
+                <button type="submit" class="bp-btn bp-btn--primary">Criar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Edit Modal -->
+<div id="editModal" class="hidden fixed inset-0 z-50 items-center justify-center p-4 bp-modal-backdrop">
+    <div class="bp-modal">
+        <div class="bp-modal-header">
+            <h2 class="bp-modal-title">Editar Cliente</h2>
+            <button onclick="closeModal('editModal')" class="bp-modal-close">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+        </div>
+        <form id="editForm" method="POST">
+            <div class="bp-modal-body space-y-4" style="display:flex;flex-direction:column;gap:16px;">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input type="hidden" name="name" id="editName">
+                <input type="hidden" name="phone" id="editPhone">
+                <input type="hidden" name="email" id="editEmail">
+                <input type="hidden" name="cpf" id="editCpf">
+                <input type="hidden" name="notes" id="editNotes">
+                <div class="bp-field">
+                    <label class="bp-label">Nome *</label>
+                    <input type="text" id="editNameInput" required class="bp-input">
+                </div>
+                <div class="bp-field-row">
+                    <div class="bp-field">
+                        <label class="bp-label">Telefone</label>
+                        <input type="text" id="editPhoneInput" class="bp-input">
+                    </div>
+                    <div class="bp-field">
+                        <label class="bp-label">CPF</label>
+                        <input type="text" id="editCpfInput" class="bp-input">
+                    </div>
+                </div>
+                <div class="bp-field">
+                    <label class="bp-label">Email</label>
+                    <input type="email" id="editEmailInput" class="bp-input">
+                </div>
+            </div>
+            <div class="bp-modal-footer">
+                <button type="button" onclick="closeModal('editModal')" class="bp-btn bp-btn--secondary">Cancelar</button>
+                <button type="submit" class="bp-btn bp-btn--primary">Salvar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function openEditModal(id, name, phone, email, cpf, notes) {
+    document.getElementById('editForm').action = '/clientes/' + id + '/editar';
+    document.getElementById('editNameInput').value = name;
+    document.getElementById('editPhoneInput').value = phone;
+    document.getElementById('editEmailInput').value = email;
+    document.getElementById('editCpfInput').value = cpf;
+    ['Name','Phone','Email','Cpf','Notes'].forEach(function(f) {
+        var v = arguments.length > 0 ? null : null;
+    });
+    document.getElementById('editName').value = name;
+    document.getElementById('editPhone').value = phone;
+    document.getElementById('editEmail').value = email;
+    document.getElementById('editCpf').value = cpf;
+    document.getElementById('editNotes').value = notes;
+    openModal('editModal');
+}
+document.getElementById('editNameInput').addEventListener('input', function() {
+    document.getElementById('editName').value = this.value;
+});
+document.getElementById('editPhoneInput').addEventListener('input', function() {
+    document.getElementById('editPhone').value = this.value;
+});
+document.getElementById('editEmailInput').addEventListener('input', function() {
+    document.getElementById('editEmail').value = this.value;
+});
+document.getElementById('editCpfInput').addEventListener('input', function() {
+    document.getElementById('editCpf').value = this.value;
+});
+</script>
+{% endblock %}

@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+{% block page_title %}Barbeiros{% endblock %}
+{% block content %}
+<div class="bp-anim space-y-6">
+    <div class="bp-page">
+        <p class="bp-text">{{ barbers|length }} barbeiro(s) cadastrado(s)</p>
+        <button onclick="openModal('createModal')" class="bp-btn bp-btn--primary bp-btn--sm">+ Novo Barbeiro</button>
+    </div>
+
+    {% if barbers %}
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {% for b in barbers %}
+        <div class="bp-card stat-card">
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 bg-accent-500/20 rounded-full flex items-center justify-center text-accent-500 font-bold text-lg">{{ b.name[0]|upper }}</div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-white font-medium truncate">{{ b.name }}</p>
+                    <p class="text-dark-400 text-sm">{{ b.phone or 'Sem telefone' }}</p>
+                    {% if b.is_active %}
+                    <span class="bp-badge bp-badge--green" style="margin-top:4px;display:inline-flex;">Ativo</span>
+                    {% else %}
+                    <span class="bp-badge bp-badge--red" style="margin-top:4px;display:inline-flex;">Inativo</span>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="flex flex-col gap-1">
+                <button onclick="openEditModal('{{ b.id }}','{{ b.name }}','{{ b.phone or '' }}',{{ b.is_active|tojson }})" class="bp-btn bp-btn--link bp-btn--sm">Editar</button>
+                <form method="POST" action="/barbeiros/{{ b.id }}/excluir" class="inline" onsubmit="return confirm('Excluir {{ b.name }}?')">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="bp-btn bp-btn--ghost bp-btn--sm" style="color:#ef4444;">Excluir</button>
+                </form>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="tbl-wrap"><div class="bp-empty">Nenhum barbeiro cadastrado</div></div>
+    {% endif %}
+</div>
+
+<!-- Create Modal -->
+<div id="createModal" class="hidden fixed inset-0 z-50 items-center justify-center p-4 bp-modal-backdrop">
+    <div class="bp-modal">
+        <div class="bp-modal-header">
+            <h2 class="bp-modal-title">Novo Barbeiro</h2>
+            <button onclick="closeModal('createModal')" class="bp-modal-close">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+        </div>
+        <form method="POST" action="/barbeiros/criar">
+            <div class="bp-modal-body space-y-4" style="display:flex;flex-direction:column;gap:16px;">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="bp-field">
+                    <label class="bp-label">Nome *</label>
+                    <input type="text" name="name" required class="bp-input">
+                </div>
+                <div class="bp-field">
+                    <label class="bp-label">Telefone</label>
+                    <input type="text" name="phone" class="bp-input" placeholder="(00) 00000-0000">
+                </div>
+            </div>
+            <div class="bp-modal-footer">
+                <button type="button" onclick="closeModal('createModal')" class="bp-btn bp-btn--secondary">Cancelar</button>
+                <button type="submit" class="bp-btn bp-btn--primary">Criar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Edit Modal -->
+<div id="editModal" class="hidden fixed inset-0 z-50 items-center justify-center p-4 bp-modal-backdrop">
+    <div class="bp-modal">
+        <div class="bp-modal-header">
+            <h2 class="bp-modal-title">Editar Barbeiro</h2>
+            <button onclick="closeModal('editModal')" class="bp-modal-close">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+        </div>
+        <form id="editForm" method="POST">
+            <div class="bp-modal-body space-y-4" style="display:flex;flex-direction:column;gap:16px;">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="bp-field">
+                    <label class="bp-label">Nome *</label>
+                    <input type="text" name="name" id="editNameInput" required class="bp-input">
+                </div>
+                <div class="bp-field">
+                    <label class="bp-label">Telefone</label>
+                    <input type="text" name="phone" id="editPhoneInput" class="bp-input">
+                </div>
+                <div class="flex items-center gap-3">
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" name="is_active" id="editActiveInput" class="sr-only peer" checked>
+                        <div class="w-11 h-6 bg-dark-600 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-accent-500"></div>
+                    </label>
+                    <span class="text-dark-300 text-sm">Ativo</span>
+                </div>
+            </div>
+            <div class="bp-modal-footer">
+                <button type="button" onclick="closeModal('editModal')" class="bp-btn bp-btn--secondary">Cancelar</button>
+                <button type="submit" class="bp-btn bp-btn--primary">Salvar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function openEditModal(id, name, phone, isActive) {
+    document.getElementById('editForm').action = '/barbeiros/' + id + '/editar';
+    document.getElementById('editNameInput').value = name;
+    document.getElementById('editPhoneInput').value = phone;
+    document.getElementById('editActiveInput').checked = isActive;
+    openModal('editModal');
+}
+</script>
+{% endblock %}

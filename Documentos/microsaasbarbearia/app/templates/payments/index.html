@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block page_title %}Pagamentos{% endblock %}
+{% block content %}
+<div class="bp-anim space-y-6">
+    {% if payments %}
+    <div class="tbl-wrap">
+        <div class="tbl-scroll">
+            <table class="bp-table">
+                <thead>
+                    <tr>
+                        <th>Data</th>
+                        <th>Agendamento</th>
+                        <th>Metodo</th>
+                        <th>Valor</th>
+                        <th class="text-center">Status</th>
+                        <th>Acoes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for p in payments %}
+                    <tr>
+                        <td>{{ p.created_at.strftime('%d/%m/%Y %H:%M') }}</td>
+                        <td class="bp-prim">
+                            {% if p.appointment %}{{ p.appointment.client.name }}{% else %}Avulso{% endif %}
+                        </td>
+                        <td>
+                            {% if p.method == 'cash' %}
+                            <span class="bp-badge bp-badge--green">Dinheiro</span>
+                            {% elif p.method == 'card' %}
+                            <span class="bp-badge bp-badge--blue">Cartao</span>
+                            {% else %}
+                            <span class="bp-badge bp-badge--purple">PIX</span>
+                            {% endif %}
+                        </td>
+                        <td class="bp-prim">R$ {{ "%.2f"|format(p.amount) }}</td>
+                        <td class="text-center">
+                            {% if p.status == 'paid' %}
+                            <span class="bp-badge bp-badge--green">Pago</span>
+                            {% elif p.status == 'pending' %}
+                            <span class="bp-badge bp-badge--blue">Pendente</span>
+                            {% else %}
+                            <span class="bp-badge bp-badge--red">Estornado</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if p.status == 'paid' %}
+                            <form method="POST" action="/pagamentos/{{ p.id }}/estornar" class="inline" onsubmit="return confirm('Estornar pagamento?')">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit" class="bp-btn bp-btn--ghost bp-btn--sm" style="color:#ef4444;">Estornar</button>
+                            </form>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% else %}
+    <div class="tbl-wrap"><div class="bp-empty">Nenhum pagamento registrado</div></div>
+    {% endif %}
+</div>
+{% endblock %}

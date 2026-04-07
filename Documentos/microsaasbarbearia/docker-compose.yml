@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - FLASK_ENV=production
+      - DATABASE_URL=postgresql://barber:barber_password@db:5432/barbearia
+      - SECRET_KEY=production-secret-change-me
+      - SESSION_COOKIE_SECURE=False
+    depends_on:
+      - db
+    restart: unless-stopped
+
+  db:
+    image: postgres:16-alpine
+    environment:
+      - POSTGRES_DB=barbearia
+      - POSTGRES_USER=barber
+      - POSTGRES_PASSWORD=barber_password
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+
+volumes:
+  pgdata:
